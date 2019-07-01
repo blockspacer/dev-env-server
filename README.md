@@ -1,6 +1,6 @@
 # Development Environment Server
 
-Goal: 
+Goal:
 Support Visual Studio Code based server side development
 Including:
 

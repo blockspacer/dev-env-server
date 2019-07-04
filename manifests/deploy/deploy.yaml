@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: code-server
+  name: code-server
+  namespace: code-server
+spec:
+  selector:
+    matchLabels:
+      app: code-server
+  serviceName: code-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: code-server
+    spec:
+      serviceAccount: dev-env-server
+      initContainers:
+      - image: quay.io/fakod/create-kubeconfig
+        name: create-kubeconfig
+        securityContext:
+          runAsUser: 1000
+        volumeMounts:
+        - name: kube-config
+          mountPath: /kube
+      containers:
+      - image: docker:dind
+        name: docker-daemon
+        imagePullPolicy: Always
+        securityContext:
+          privileged: true
+      - image: quay.io/fakod/dev-env-server
+        command: ["/bin/sh", "-c", "sudo chown coder ~/project; sudo chown coder ~/.local; dumb-init code-server --allow-http --no-auth"]
+        imagePullPolicy: Always
+        name: code-server
+        ports:
+        - containerPort: 8443
+          name: http
+        volumeMounts:
+        - name: code-server-storage
+          mountPath: /home/coder/project
+        - name: code-server-config
+          mountPath: /home/coder/.local
+        - name: kube-config
+          mountPath: /home/coder/.kube
+      volumes:
+      - name: kube-config
+        emptyDir: {}
+  volumeClaimTemplates:
+  - metadata:
+      name: code-server-storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 10Gi
+  - metadata:
+      name: code-server-config
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 10Mi
+      

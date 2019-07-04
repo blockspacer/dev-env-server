@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
-if ! serviceaccount="$(/kubectl get po $hostname -o=jsonpath='{.items[0].spec.serviceAccount}' 2>/dev/null)"; then
+if ! serviceaccount="$(/kubectl get po $HOSTNAME -o=jsonpath='{.spec.serviceAccount}')"; then
     echo "serviceaccount not found." >&2
     exit 2
 fi
 
-if ! secret="$(/kubectl get serviceaccount "$serviceaccount" -o 'jsonpath={.secrets[0].name}' 2>/dev/null)"; then
+if ! secret="$(/kubectl get serviceaccount "$serviceaccount" -o 'jsonpath={.secrets[0].name}')"; then
   echo "serviceaccounts \"$serviceaccount\" not found." >&2
   exit 2
 fi

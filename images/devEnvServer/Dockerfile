@@ -79,8 +79,9 @@ ENV DOCKER_HOST tcp://0.0.0.0:2375
 USER coder
 WORKDIR /home/coder
 
-RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" ; \
-	git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf ; ~/.fzf/install;
+RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 COPY .zshrc $HOMEPATH/
+RUN git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf ; ~/.fzf/install
+
 WORKDIR /home/coder/project
 ENTRYPOINT ["dumb-init", "code-server"]

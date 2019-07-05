@@ -31,6 +31,9 @@ spec:
         imagePullPolicy: Always
         securityContext:
           privileged: true
+        volumeMounts:
+        - name: docker-storage
+          mountPath: /var/lib/docker
       - image: quay.io/fakod/dev-env-server
         command: ["/bin/sh", "-c", "sudo chown coder ~/project; sudo chown coder ~/.local; dumb-init code-server --allow-http --no-auth"]
         imagePullPolicy: Always
@@ -63,4 +66,11 @@ spec:
       resources:
         requests:
           storage: 10Mi
+  - metadata:
+      name: docker-storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 10Gi
       

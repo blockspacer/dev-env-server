@@ -25,18 +25,35 @@ spec:
         volumeMounts:
         - name: kube-config
           mountPath: /kube
+      - image: busybox:1
+        name: configure
+        args:
+        - /bin/sh
+        - -c
+        - cp /ssh/* /coder/.ssh/ ; chmod 0600 /coder/.ssh/id_rsa
+        securityContext:
+          runAsUser: 1000
+        volumeMounts:
+        - name: ssh-key-volume
+          mountPath: /ssh
+        - name: ssh-folder
+          mountPath: /coder/.ssh/
       containers:
-      - image: docker:dind
+      - image: docker:19-dind
         name: docker-daemon
-        imagePullPolicy: Always
+        env:
+        - name: DOCKER_TLS_CERTDIR
+          value:
         securityContext:
           privileged: true
         volumeMounts:
         - name: docker-storage
           mountPath: /var/lib/docker
       - image: quay.io/fakod/dev-env-server
-        command: ["/bin/sh", "-c", "sudo chown coder ~/project; sudo chown coder ~/.local; dumb-init code-server --allow-http --no-auth"]
-        imagePullPolicy: Always
+        command:
+        - /bin/sh
+        - -c
+        - "sudo chown coder ~/project; sudo chown coder ~/.local; exec dumb-init code-server --allow-http --no-auth"
         name: code-server
         ports:
         - containerPort: 8443
@@ -48,9 +65,16 @@ spec:
           mountPath: /home/coder/.local
         - name: kube-config
           mountPath: /home/coder/.kube
+        - name: ssh-folder
+          mountPath: /home/coder/.ssh/
       volumes:
       - name: kube-config
         emptyDir: {}
+      - name: ssh-folder
+        emptyDir: {}
+      - name: ssh-key-volume
+        secret:
+          secretName: code-ssh
   volumeClaimTemplates:
   - metadata:
       name: code-server-storage

@@ -11,6 +11,12 @@ configMapGenerator:
 - name: code-server-config
   env: code-server.properties
 
+secretGenerator:
+- name: code-ssh
+  files:
+  - ./ssh/id_rsa
+  - ./ssh/id_rsa.pub
+
 vars:
 - name: CODESERVER_CONFIG_DOMAIN
   objref:
